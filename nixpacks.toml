@@ -1,0 +1,5 @@
+[phases.build]
+cmds = ["composer install --no-dev --optimize-autoloader"]
+
+[start]
+cmd = "php artisan migrate --force && php artisan config:cache && vendor/bin/heroku-php-apache2 public/"

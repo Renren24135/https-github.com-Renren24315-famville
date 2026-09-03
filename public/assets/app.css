@@ -1,0 +1,127 @@
+:root {
+    --fv-navy: #123456;
+}
+
+body {
+    background-color: #f4f6f9;
+}
+
+.fv-sidebar {
+    min-height: 100vh;
+}
+
+.fv-brand {
+    font-weight: 700;
+    letter-spacing: .02em;
+}
+
+.asset-card {
+    border-radius: .75rem;
+    border-width: 2px;
+    transition: transform .15s ease;
+}
+
+.asset-card:hover {
+    transform: translateY(-2px);
+}
+
+.asset-card .asset-timer,
+.asset-timer {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+}
+
+.asset-card .asset-timer {
+    font-size: 1.5rem;
+}
+
+/* Color-coded session countdown badge: green while most of the session
+   remains, yellow past the halfway point, red as it nears the end. */
+.asset-timer.badge {
+    font-size: 1rem;
+    padding: .45rem .75rem;
+    letter-spacing: .02em;
+}
+
+.status-dot {
+    display: inline-block;
+    width: .6rem;
+    height: .6rem;
+    border-radius: 50%;
+}
+
+.table-responsive-card {
+    border-radius: .75rem;
+}
+
+.navbar-brand small {
+    display: block;
+    font-size: .65rem;
+    font-weight: 400;
+    opacity: .85;
+}
+
+.min-vh-80 {
+    min-height: 80vh;
+}
+
+/* ---------- Responsive tuning: mobile / tablet / laptop ---------- */
+
+/* Mobile phones (<576px) */
+@media (max-width: 575.98px) {
+    .navbar-brand small {
+        display: none;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    .asset-card .asset-timer {
+        font-size: 1.25rem;
+    }
+
+    .display-5 {
+        font-size: 2rem;
+    }
+
+    /* Stack modal action buttons full-width and give them room to wrap
+       so cashier/admin forms stay usable on a phone screen. */
+    .modal-footer {
+        flex-wrap: wrap;
+        gap: .5rem;
+    }
+
+    .modal-footer .btn {
+        width: 100%;
+        margin: 0 !important;
+    }
+
+    .table {
+        font-size: .875rem;
+    }
+
+    .btn {
+        min-height: 2.5rem;
+    }
+}
+
+/* Tablets (576px - 991.98px) */
+@media (min-width: 576px) and (max-width: 991.98px) {
+    .asset-card .asset-timer {
+        font-size: 1.35rem;
+    }
+
+    .container-fluid {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+}
+
+/* Laptop / desktop (>=992px) */
+@media (min-width: 992px) {
+    .container-fluid {
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+}
