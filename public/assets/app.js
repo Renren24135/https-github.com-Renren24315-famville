@@ -61,12 +61,133 @@
         });
     }
 
-    document.querySelectorAll('[data-confirm]').forEach(function (form) {
-        form.addEventListener('submit', function (e) {
-            if (!window.confirm(form.getAttribute('data-confirm'))) {
-                e.preventDefault();
+    // A centered Bootstrap modal standing in for window.confirm(), which
+    // renders top-left and unstyled in some browsers. Built once and reused
+    // for every [data-confirm] form on the page.
+    var confirmModalEl = null;
+    var confirmModal = null;
+    var pendingConfirmForm = null;
+
+    function ensureConfirmModal() {
+        if (confirmModalEl) {
+            return;
+        }
+
+        confirmModalEl = document.createElement('div');
+        confirmModalEl.className = 'modal fade';
+        confirmModalEl.tabIndex = -1;
+        confirmModalEl.innerHTML =
+            '<div class="modal-dialog modal-dialog-centered">' +
+                '<div class="modal-content">' +
+                    '<div class="modal-body py-4" data-confirm-message></div>' +
+                    '<div class="modal-footer">' +
+                        '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>' +
+                        '<button type="button" class="btn btn-primary" data-confirm-ok>OK</button>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
+        document.body.appendChild(confirmModalEl);
+        confirmModal = new bootstrap.Modal(confirmModalEl);
+
+        confirmModalEl.querySelector('[data-confirm-ok]').addEventListener('click', function () {
+            var form = pendingConfirmForm;
+            pendingConfirmForm = null;
+            confirmModal.hide();
+            if (form) {
+                form.dataset.confirmBypass = '1';
+                // requestSubmit() (not submit()) so the loading-spinner
+                // listener below still sees this as a real submit event.
+                form.requestSubmit();
             }
         });
+
+        confirmModalEl.addEventListener('hidden.bs.modal', function () {
+            pendingConfirmForm = null;
+        });
+    }
+
+    document.querySelectorAll('[data-confirm]').forEach(function (form) {
+        form.addEventListener('submit', function (e) {
+            if (form.dataset.confirmBypass) {
+                delete form.dataset.confirmBypass;
+                return;
+            }
+
+            e.preventDefault();
+            ensureConfirmModal();
+            pendingConfirmForm = form;
+            confirmModalEl.querySelector('[data-confirm-message]').textContent = form.getAttribute('data-confirm');
+            confirmModal.show();
+        });
+    });
+
+    // A centered Bootstrap modal standing in for window.alert(), so error/
+    // info popups get the same icon + card treatment as the rest of the UI
+    // instead of the browser's plain top-left dialog. Exposed globally so
+    // Blade views can trigger it inline.
+    var alertModalEl = null;
+    var alertModal = null;
+
+    function ensureAlertModal() {
+        if (alertModalEl) {
+            return;
+        }
+
+        alertModalEl = document.createElement('div');
+        alertModalEl.className = 'modal fade';
+        alertModalEl.tabIndex = -1;
+        alertModalEl.innerHTML =
+            '<div class="modal-dialog modal-dialog-centered">' +
+                '<div class="modal-content text-center">' +
+                    '<div class="modal-body py-4 px-4">' +
+                        '<div class="mb-3" data-alert-icon><i class="bi bi-exclamation-circle-fill text-danger" style="font-size: 2.75rem;"></i></div>' +
+                        '<div class="fw-semibold mb-1" data-alert-title></div>' +
+                        '<div class="text-muted small" data-alert-message style="white-space: pre-line;"></div>' +
+                    '</div>' +
+                    '<div class="modal-footer justify-content-center border-top-0 pt-0">' +
+                        '<button type="button" class="btn btn-primary px-4" data-bs-dismiss="modal">OK</button>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
+        document.body.appendChild(alertModalEl);
+        alertModal = new bootstrap.Modal(alertModalEl);
+    }
+
+    window.famvilleShowAlert = function (message, options) {
+        options = options || {};
+
+        ensureAlertModal();
+        alertModalEl.querySelector('[data-alert-title]').textContent = options.title || 'Please fix the following';
+        alertModalEl.querySelector('[data-alert-message]').textContent = message;
+        alertModal.show();
+    };
+
+    // Instant feedback on every real form submission (approve/void/pay/etc.)
+    // so a slow request never looks like the click did nothing — also
+    // guards against a double-click firing the same action twice. Runs in
+    // the bubble phase so it sees e.defaultPrevented set by data-confirm
+    // above when the user cancels.
+    document.addEventListener('submit', function (e) {
+        if (e.defaultPrevented) {
+            return;
+        }
+
+        var form = e.target;
+        if (!(form instanceof HTMLFormElement) || form.hasAttribute('data-no-loading-state')) {
+            return;
+        }
+
+        var submitter = e.submitter || form.querySelector('button[type="submit"]:not([disabled])');
+        if (!submitter) {
+            return;
+        }
+
+        form.querySelectorAll('button[type="submit"]').forEach(function (btn) {
+            btn.disabled = true;
+        });
+
+        submitter.dataset.originalHtml = submitter.innerHTML;
+        submitter.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> ' + (submitter.dataset.loadingText || 'Please wait…');
     });
 
     document.querySelectorAll('.alert[data-autohide]').forEach(function (alertEl) {

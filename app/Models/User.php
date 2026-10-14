@@ -14,7 +14,10 @@ use Spatie\Activitylog\Models\Concerns\LogsActivity;
 use Spatie\Activitylog\Support\LogOptions;
 use Spatie\Permission\Traits\HasRoles;
 
-#[Fillable(['name', 'email', 'phone', 'password'])]
+#[Fillable([
+    'name', 'email', 'phone', 'password', 'is_active', 'email_verified_at',
+    'two_factor_secret', 'two_factor_recovery_codes', 'two_factor_confirmed_at',
+])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -27,6 +30,13 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_active' => 'boolean',
+            // AES-256-CBC + HMAC via Laravel's own Encrypter (APP_KEY) —
+            // confirmed never queried/sorted/searched anywhere in the app,
+            // so encrypting it costs nothing functionally.
+            'phone' => 'encrypted',
+            'two_factor_secret' => 'encrypted',
+            'two_factor_recovery_codes' => 'encrypted',
+            'two_factor_confirmed_at' => 'datetime',
         ];
     }
 
@@ -67,5 +77,10 @@ class User extends Authenticatable implements MustVerifyEmail
     public function isStaff(): bool
     {
         return $this->hasAnyRole(['admin', 'cashier']);
+    }
+
+    public function twoFactorEnabled(): bool
+    {
+        return ! is_null($this->two_factor_confirmed_at);
     }
 }

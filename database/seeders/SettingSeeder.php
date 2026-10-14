@@ -15,7 +15,9 @@ class SettingSeeder extends Seeder
             'company_phone' => '0912-345-6789',
             'company_email' => 'contact@famville.test',
             'company_facebook' => 'facebook.com/famvillekoronadal',
-            'opening_hours' => '10:00 AM - 10:00 PM, Daily',
+            'opening_hours' => '2:00 PM - 10:00 PM, Daily',
+            'gcash_number' => '0909-582-6296',
+            'gcash_account_name' => 'GE*A L.',
         ];
 
         foreach ($defaults as $key => $value) {

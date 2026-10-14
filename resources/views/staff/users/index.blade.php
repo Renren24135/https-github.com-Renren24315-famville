@@ -3,9 +3,27 @@
 @section('title', 'Staff Accounts')
 
 @section('content')
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="mb-0"><i class="bi bi-people"></i> Staff Accounts</h3>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <div>
+            <div class="fv-eyebrow mb-1">Team</div>
+            <h3 class="mb-0"><i class="bi bi-people"></i> Staff Accounts</h3>
+        </div>
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addUserModal"><i class="bi bi-person-plus"></i> Add Staff</button>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <x-fv-stat-tile label="Total Staff" :value="$users->count()" />
+        </div>
+        <div class="col-6 col-md-3">
+            <x-fv-stat-tile label="Admins" :value="$users->filter(fn ($u) => $u->hasRole('admin'))->count()" />
+        </div>
+        <div class="col-6 col-md-3">
+            <x-fv-stat-tile label="Cashiers" :value="$users->filter(fn ($u) => $u->hasRole('cashier'))->count()" />
+        </div>
+        <div class="col-6 col-md-3">
+            <x-fv-stat-tile label="Active" :value="$users->where('is_active', true)->count()" />
+        </div>
     </div>
 
     <div class="card shadow-sm table-responsive-card">
@@ -24,11 +42,19 @@
                 <tbody>
                     @forelse ($users as $user)
                         <tr>
-                            <td>{{ $user->name }}</td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="d-inline-flex align-items-center justify-content-center rounded-circle fw-semibold fv-mono"
+                                          style="width: 32px; height: 32px; background: var(--fv-surface-elevated); border: 1px solid var(--fv-border-strong); font-size: .75rem;">
+                                        {{ strtoupper(substr($user->name, 0, 1)) }}
+                                    </span>
+                                    <span class="fw-semibold">{{ $user->name }}</span>
+                                </div>
+                            </td>
                             <td>{{ $user->email }}</td>
                             <td>{{ $user->phone }}</td>
-                            <td><span class="badge bg-secondary text-capitalize">{{ $user->getRoleNames()->first() }}</span></td>
-                            <td><span class="badge bg-{{ $user->is_active ? 'success' : 'secondary' }}">{{ $user->is_active ? 'Active' : 'Inactive' }}</span></td>
+                            <td><x-fv-status-dot :color="$user->hasRole('admin') ? 'info' : 'secondary'" :label="ucfirst($user->getRoleNames()->first())" /></td>
+                            <td><x-fv-status-dot :color="$user->is_active ? 'success' : 'secondary'" :label="$user->is_active ? 'Active' : 'Inactive'" /></td>
                             <td class="text-end">
                                 <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#editUserModal{{ $user->id }}">Edit</button>
                                 @if ($user->id !== auth()->id())

@@ -89,6 +89,16 @@
                 </div>
             </div>
 
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">Two-Factor Authentication</div>
+                <div class="card-body">
+                    <p class="small text-muted">Add a second step to your login using an authenticator app.</p>
+                    <a href="{{ route('two-factor.show') }}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-shield-lock"></i> Manage Two-Factor Authentication
+                    </a>
+                </div>
+            </div>
+
             <div class="card shadow-sm border-danger">
                 <div class="card-header bg-danger text-white">Delete Account</div>
                 <div class="card-body">
@@ -124,7 +134,7 @@
     </div>
 
     @if ($errors->userDeletion->isNotEmpty())
-        <script>
+        <script nonce="{{ $cspNonce }}">
             document.addEventListener('DOMContentLoaded', function () {
                 new bootstrap.Modal(document.getElementById('deleteAccountModal')).show();
             });

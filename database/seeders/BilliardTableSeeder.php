@@ -9,7 +9,7 @@ class BilliardTableSeeder extends Seeder
 {
     public function run(): void
     {
-        foreach (['Table 1', 'Table 2', 'Table 3'] as $name) {
+        foreach (['T-01', 'T-02', 'T-03', 'T-04', 'T-05', 'T-06', 'T-07', 'T-08'] as $name) {
             BilliardTable::query()->updateOrCreate(
                 ['name' => $name],
                 ['status' => 'available']

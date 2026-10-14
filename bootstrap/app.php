@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Middleware\ContentSecurityPolicy;
 use App\Http\Middleware\EnsureAccountIsActive;
+use App\Http\Middleware\EnsureTwoFactorChallenged;
 use App\Http\Middleware\ForceHttps;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -22,7 +24,13 @@ return Application::configure(basePath: dirname(__DIR__))
         }
 
         $middleware->prependToGroup('web', [ForceHttps::class]);
-        $middleware->appendToGroup('web', [EnsureAccountIsActive::class]);
+        $middleware->appendToGroup('web', [ContentSecurityPolicy::class, EnsureAccountIsActive::class, EnsureTwoFactorChallenged::class]);
+
+        // PayMongo calls this directly — it has no Laravel session and
+        // sends no CSRF token. The route is instead protected by verifying
+        // PayMongo's own HMAC signature on every request (see
+        // PayMongoService::verifyWebhookSignature()).
+        $middleware->validateCsrfTokens(except: ['payments/paymongo/webhook']);
 
         $middleware->alias([
             'role' => RoleMiddleware::class,

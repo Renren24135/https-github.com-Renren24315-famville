@@ -13,8 +13,8 @@ class DashboardController extends Controller
 {
     public function index(): View
     {
-        $lanes = Lane::query()->orderBy('name')->get();
-        $tables = BilliardTable::query()->orderBy('name')->get();
+        $lanes = Lane::orderedByName();
+        $tables = BilliardTable::orderedByName();
         $rateTiers = BilliardRateTier::query()->where('is_active', true)->orderBy('start_time')->get();
 
         $contact = [

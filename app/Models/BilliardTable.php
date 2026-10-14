@@ -36,6 +36,15 @@ class BilliardTable extends Model
             ->first();
     }
 
+    /**
+     * See Lane::orderedByName() — same reasoning, kept consistent across
+     * both asset types.
+     */
+    public static function orderedByName(): \Illuminate\Support\Collection
+    {
+        return static::query()->get()->sortBy('name', SORT_NATURAL)->values();
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()

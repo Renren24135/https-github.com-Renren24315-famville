@@ -3,9 +3,20 @@
 @section('title', 'Billiard Tables')
 
 @section('content')
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="mb-0"><i class="bi bi-circle"></i> Billiard Tables</h3>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <div>
+            <div class="fv-eyebrow mb-1">Venue Assets</div>
+            <h3 class="mb-0"><i class="bi bi-circle"></i> Billiard Tables</h3>
+        </div>
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTableModal"><i class="bi bi-plus-circle"></i> Add Table</button>
+    </div>
+
+    <div class="row g-3 mb-4">
+        @foreach (['available' => 'Available', 'occupied' => 'Occupied', 'reserved' => 'Reserved', 'maintenance' => 'Maintenance'] as $key => $label)
+            <div class="col-6 col-md-3">
+                <x-fv-stat-tile :label="$label" :value="$tables->where('status', $key)->count()" />
+            </div>
+        @endforeach
     </div>
 
     <div class="card shadow-sm table-responsive-card">
@@ -22,8 +33,8 @@
                 <tbody>
                     @forelse ($tables as $table)
                         <tr>
-                            <td>{{ $table->name }}</td>
-                            <td><span class="badge bg-{{ $table->status->color() }}">{{ $table->status->label() }}</span></td>
+                            <td class="fw-semibold">{{ $table->name }}</td>
+                            <td><x-fv-status-dot :color="$table->status->color()" :label="$table->status->label()" /></td>
                             <td class="text-muted small">{{ $table->notes }}</td>
                             <td class="text-end">
                                 <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#editTableModal{{ $table->id }}">Edit</button>

@@ -15,7 +15,7 @@ class LaneController extends Controller
     {
         $this->authorize('manage-lanes');
 
-        $lanes = Lane::query()->orderBy('name')->get();
+        $lanes = Lane::orderedByName();
 
         return view('staff.lanes.index', compact('lanes'));
     }

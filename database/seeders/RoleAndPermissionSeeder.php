@@ -14,9 +14,11 @@ class RoleAndPermissionSeeder extends Seeder
             'manage-lanes',
             'manage-tables',
             'manage-rates',
+            'manage-closures',
             'manage-bookings',
             'process-pos',
             'view-reports',
+            'send-reports',
             'manage-users',
             'manage-settings',
         ];
@@ -30,12 +32,10 @@ class RoleAndPermissionSeeder extends Seeder
 
         $cashier = Role::findOrCreate('cashier', 'web');
         $cashier->syncPermissions([
-            'manage-lanes',
-            'manage-tables',
-            'manage-rates',
             'manage-bookings',
             'process-pos',
             'view-reports',
+            'send-reports',
         ]);
 
         Role::findOrCreate('customer', 'web');

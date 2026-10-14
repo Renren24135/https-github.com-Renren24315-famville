@@ -3,9 +3,20 @@
 @section('title', 'Bowling Lanes')
 
 @section('content')
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="mb-0"><i class="bi bi-align-center"></i> Bowling Lanes</h3>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <div>
+            <div class="fv-eyebrow mb-1">Venue Assets</div>
+            <h3 class="mb-0"><i class="bi bi-align-center"></i> Bowling Lanes</h3>
+        </div>
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addLaneModal"><i class="bi bi-plus-circle"></i> Add Lane</button>
+    </div>
+
+    <div class="row g-3 mb-4">
+        @foreach (['available' => 'Available', 'occupied' => 'Occupied', 'reserved' => 'Reserved', 'maintenance' => 'Maintenance'] as $key => $label)
+            <div class="col-6 col-md-3">
+                <x-fv-stat-tile :label="$label" :value="$lanes->where('status', $key)->count()" />
+            </div>
+        @endforeach
     </div>
 
     <div class="card shadow-sm table-responsive-card">
@@ -23,9 +34,9 @@
                 <tbody>
                     @forelse ($lanes as $lane)
                         <tr>
-                            <td>{{ $lane->name }}</td>
-                            <td>&#8369;{{ number_format($lane->price_per_scoresheet, 2) }}</td>
-                            <td><span class="badge bg-{{ $lane->status->color() }}">{{ $lane->status->label() }}</span></td>
+                            <td class="fw-semibold">{{ $lane->name }}</td>
+                            <td class="fv-mono">&#8369;{{ number_format($lane->price_per_scoresheet, 2) }}</td>
+                            <td><x-fv-status-dot :color="$lane->status->color()" :label="$lane->status->label()" /></td>
                             <td class="text-muted small">{{ $lane->notes }}</td>
                             <td class="text-end">
                                 <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#editLaneModal{{ $lane->id }}">Edit</button>

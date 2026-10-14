@@ -16,8 +16,8 @@
                 <dt class="col-6">Receipt No.</dt>
                 <dd class="col-6 text-end">{{ $transaction->receipt_no }}</dd>
 
-                <dt class="col-6">Date</dt>
-                <dd class="col-6 text-end">{{ $transaction->created_at->format('M d, Y g:i A') }}</dd>
+                <dt class="col-6">Session Date</dt>
+                <dd class="col-6 text-end">{{ $transaction->booking->booking_date->format('M d, Y') }} {{ \Illuminate\Support\Carbon::parse($transaction->booking->start_time)->format('g:i A') }}</dd>
 
                 <dt class="col-6">Customer</dt>
                 <dd class="col-6 text-end">{{ $transaction->booking->customer_name }}</dd>
@@ -27,32 +27,46 @@
 
                 <dt class="col-6">Quantity</dt>
                 <dd class="col-6 text-end">{{ $transaction->booking->scoresheets ? $transaction->booking->scoresheets.' scoresheet(s)' : $transaction->booking->hours.' hour(s)' }}</dd>
-
-                <dt class="col-6">Payment Method</dt>
-                <dd class="col-6 text-end text-capitalize">{{ $transaction->payment_method }}</dd>
-
-                <dt class="col-6">Cashier</dt>
-                <dd class="col-6 text-end">{{ $transaction->cashier->name }}</dd>
             </dl>
+            <hr>
+
+            {{-- One line per payment actually collected for this booking —
+                 a fee + balance split shows both, each with its own
+                 receipt no., method, cashier, and amount. --}}
+            @foreach ($transactions as $t)
+                @php($isFeeLine = (float) $t->amount === (float) $transaction->booking->reservation_fee && $transaction->booking->reservation_fee > 0)
+                <div class="d-flex justify-content-between mb-1">
+                    <span>{{ $isFeeLine ? 'Reservation Fee (10%)' : 'Session Balance' }}</span>
+                    <span class="fw-semibold">&#8369;{{ number_format($t->amount, 2) }}</span>
+                </div>
+                <div class="text-muted small mb-2">
+                    {{ $t->payment_method === 'gcash' ? 'GCash' : 'Cash' }}
+                    @if ($t->payment_method === 'gcash' && $t->gcash_reference)
+                        (Ref: {{ $t->gcash_reference }})
+                    @endif
+                    &middot; {{ $t->created_at->format('M d, Y g:i A') }}
+                    &middot; {{ $t->cashier->name }}
+                    @if ($t->cash_tendered !== null)
+                        <br>Cash Tendered &#8369;{{ number_format($t->cash_tendered, 2) }} &middot; Change &#8369;{{ number_format($t->change_due, 2) }}
+                    @endif
+                </div>
+            @endforeach
+
             <hr>
             <div class="d-flex justify-content-between fs-4 fw-bold">
                 <span>Total</span>
-                <span>&#8369;{{ number_format($transaction->amount, 2) }}</span>
+                <span>&#8369;{{ number_format($transactions->sum('amount'), 2) }}</span>
             </div>
-            @if ($transaction->cash_tendered !== null)
-                <div class="d-flex justify-content-between text-muted small mt-2">
-                    <span>Cash Tendered</span>
-                    <span>&#8369;{{ number_format($transaction->cash_tendered, 2) }}</span>
-                </div>
-                <div class="d-flex justify-content-between text-muted small">
-                    <span>Change</span>
-                    <span>&#8369;{{ number_format($transaction->change_due, 2) }}</span>
-                </div>
-            @endif
         </div>
         <div class="card-footer d-flex justify-content-between">
             <a href="{{ route('staff.pos.index') }}" class="btn btn-outline-secondary btn-sm">Back to POS</a>
-            <button onclick="window.print()" class="btn btn-primary btn-sm"><i class="bi bi-printer"></i> Print</button>
+            <button type="button" id="printReceiptBtn" class="btn btn-primary btn-sm"><i class="bi bi-printer"></i> Print</button>
         </div>
     </div>
+
+    <script nonce="{{ $cspNonce }}">
+        document.getElementById('printReceiptBtn').addEventListener('click', function () {
+            window.print();
+        });
+    </script>
 @endsection

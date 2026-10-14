@@ -7,7 +7,7 @@
 
     <div class="card shadow-sm" style="max-width: 600px;">
         <div class="card-body">
-            <form method="POST" action="{{ route('staff.settings.update') }}">
+            <form method="POST" action="{{ route('staff.settings.update') }}" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
 
@@ -40,6 +40,40 @@
                     <label class="form-label">Opening Hours</label>
                     <input type="text" name="opening_hours" class="form-control @error('opening_hours') is-invalid @enderror" value="{{ old('opening_hours', $settings['opening_hours']) }}" required>
                     @error('opening_hours')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+
+                <hr>
+                <h6 class="text-uppercase text-muted small mb-3"><i class="bi bi-wallet2"></i> GCash Reservation Fee</h6>
+                <div class="mb-3">
+                    <label class="form-label">GCash Number</label>
+                    <input type="text" name="gcash_number" class="form-control @error('gcash_number') is-invalid @enderror" placeholder="0917-000-0000" value="{{ old('gcash_number', $settings['gcash_number']) }}" required>
+                    @error('gcash_number')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    <div class="form-text">Shown to customers so they know where to send their 10% reservation fee.</div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">GCash Account Name</label>
+                    <input type="text" name="gcash_account_name" class="form-control @error('gcash_account_name') is-invalid @enderror" value="{{ old('gcash_account_name', $settings['gcash_account_name']) }}" required>
+                    @error('gcash_account_name')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">GCash QR Code</label>
+                    @php($qrPath = public_path('assets/img/'.$settings['gcash_qr_filename']))
+                    @if (file_exists($qrPath))
+                        <div class="mb-2">
+                            <img src="{{ asset('assets/img/'.$settings['gcash_qr_filename']) }}?v={{ filemtime($qrPath) }}" alt="Current GCash QR code" class="img-thumbnail" style="max-width: 180px;">
+                        </div>
+                    @endif
+                    <input type="file" name="gcash_qr" accept="image/*" class="form-control @error('gcash_qr') is-invalid @enderror">
+                    @error('gcash_qr')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    <div class="form-text">Upload a screenshot of your GCash QR code to replace the one shown to customers. Leave blank to keep the current one.</div>
+                </div>
+                <hr>
+
+                <div class="mb-3">
+                    <label class="form-label">Report Recipients <span class="text-muted">(comma-separated emails, optional)</span></label>
+                    <input type="text" name="report_recipients" class="form-control @error('report_recipients') is-invalid @enderror" placeholder="owner@example.com, manager@example.com" value="{{ old('report_recipients', $settings['report_recipients']) }}">
+                    @error('report_recipients')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    <div class="form-text">The daily and weekly business report is emailed here automatically. Leave blank to send to all admin accounts instead.</div>
                 </div>
 
                 <button type="submit" class="btn btn-primary">Save Settings</button>

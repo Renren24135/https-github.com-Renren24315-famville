@@ -10,10 +10,14 @@ enum BookingStatus: string
     case Occupied = 'occupied';
     case Completed = 'completed';
     case Cancelled = 'cancelled';
+    case VoidPending = 'void_pending';
 
     public function label(): string
     {
-        return ucfirst($this->value);
+        return match ($this) {
+            self::VoidPending => 'Void Pending',
+            default => ucfirst($this->value),
+        };
     }
 
     public function color(): string
@@ -25,6 +29,7 @@ enum BookingStatus: string
             self::Occupied => 'danger',
             self::Completed => 'success',
             self::Cancelled => 'secondary',
+            self::VoidPending => 'dark',
         };
     }
 }

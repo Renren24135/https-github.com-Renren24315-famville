@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             BilliardTableSeeder::class,
             BilliardRateTierSeeder::class,
             SettingSeeder::class,
+            PayMongoSystemUserSeeder::class,
         ]);
 
         $demoCustomer = User::query()->updateOrCreate(

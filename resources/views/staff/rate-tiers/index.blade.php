@@ -3,11 +3,47 @@
 @section('title', 'Billiard Rate Tiers')
 
 @section('content')
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="mb-0"><i class="bi bi-tags"></i> Billiard Rate Tiers</h3>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <div>
+            <div class="fv-eyebrow mb-1">Billiards Pricing</div>
+            <h3 class="mb-0"><i class="bi bi-tags"></i> Billiard Rate Tiers</h3>
+        </div>
         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTierModal"><i class="bi bi-plus-circle"></i> Add Rate Tier</button>
     </div>
     <p class="text-muted small">These time-based rates apply to all billiard tables. The rate used for a booking is whichever tier covers its start time.</p>
+
+    @php
+        $fvTierColors = ['#18d6c4', '#f5a524', '#6ea8fe', '#e07bf5', '#52d17c', '#ff8f6b'];
+    @endphp
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="fv-eyebrow mb-2">24-Hour Timeline</div>
+            <div class="position-relative" style="height: 48px; background: var(--fv-surface); border: 1px solid var(--fv-border); border-radius: var(--fv-radius-sm); overflow: hidden;">
+                @forelse ($rateTiers as $i => $tier)
+                    @php
+                        $startMin = \Illuminate\Support\Carbon::parse($tier->start_time)->hour * 60 + \Illuminate\Support\Carbon::parse($tier->start_time)->minute;
+                        $endMin = \Illuminate\Support\Carbon::parse($tier->end_time)->hour * 60 + \Illuminate\Support\Carbon::parse($tier->end_time)->minute;
+                        $color = $fvTierColors[$i % count($fvTierColors)];
+                    @endphp
+                    @if ($endMin > $startMin)
+                        <div class="position-absolute top-0 h-100 d-flex align-items-center justify-content-center text-truncate px-1"
+                             style="left: {{ $startMin / 1440 * 100 }}%; width: {{ ($endMin - $startMin) / 1440 * 100 }}%; background: {{ $color }}; opacity: {{ $tier->is_active ? '0.85' : '0.3' }};"
+                             title="{{ $tier->label }}">
+                            <span class="small fw-semibold text-dark text-truncate">{{ $tier->label }}</span>
+                        </div>
+                    @else
+                        <div class="position-absolute top-0 h-100" style="left: {{ $startMin / 1440 * 100 }}%; width: {{ (1440 - $startMin) / 1440 * 100 }}%; background: {{ $color }}; opacity: {{ $tier->is_active ? '0.85' : '0.3' }};" title="{{ $tier->label }}"></div>
+                        <div class="position-absolute top-0 h-100" style="left: 0; width: {{ $endMin / 1440 * 100 }}%; background: {{ $color }}; opacity: {{ $tier->is_active ? '0.85' : '0.3' }};" title="{{ $tier->label }}"></div>
+                    @endif
+                @empty
+                    <div class="d-flex align-items-center justify-content-center h-100 text-muted small">No tiers to visualize yet.</div>
+                @endforelse
+            </div>
+            <div class="d-flex justify-content-between text-muted small mt-1">
+                <span>12 AM</span><span>6 AM</span><span>12 PM</span><span>6 PM</span><span>12 AM</span>
+            </div>
+        </div>
+    </div>
 
     <div class="card shadow-sm table-responsive-card">
         <div class="table-responsive">
@@ -25,11 +61,11 @@
                 <tbody>
                     @forelse ($rateTiers as $tier)
                         <tr>
-                            <td>{{ $tier->label }}</td>
-                            <td>{{ \Illuminate\Support\Carbon::parse($tier->start_time)->format('g:i A') }}</td>
-                            <td>{{ \Illuminate\Support\Carbon::parse($tier->end_time)->format('g:i A') }}</td>
-                            <td>&#8369;{{ number_format($tier->rate_per_hour, 2) }}</td>
-                            <td><span class="badge bg-{{ $tier->is_active ? 'success' : 'secondary' }}">{{ $tier->is_active ? 'Active' : 'Inactive' }}</span></td>
+                            <td class="fw-semibold">{{ $tier->label }}</td>
+                            <td class="fv-mono">{{ \Illuminate\Support\Carbon::parse($tier->start_time)->format('g:i A') }}</td>
+                            <td class="fv-mono">{{ \Illuminate\Support\Carbon::parse($tier->end_time)->format('g:i A') }}</td>
+                            <td class="fv-mono">&#8369;{{ number_format($tier->rate_per_hour, 2) }}</td>
+                            <td><x-fv-status-dot :color="$tier->is_active ? 'success' : 'secondary'" :label="$tier->is_active ? 'Active' : 'Inactive'" /></td>
                             <td class="text-end">
                                 <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#editTierModal{{ $tier->id }}">Edit</button>
                                 <form method="POST" action="{{ route('staff.rate-tiers.destroy', $tier) }}" class="d-inline" data-confirm="Delete this rate tier?">

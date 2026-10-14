@@ -10,12 +10,15 @@ class TransactionController extends Controller
 {
     public function index(): View
     {
-        $transactions = Transaction::query()
-            ->where('user_id', auth()->id())
-            ->with('booking.bookable')
-            ->latest()
-            ->paginate(10);
+        $query = Transaction::query()->where('user_id', auth()->id());
 
-        return view('customer.transactions.index', compact('transactions'));
+        // Computed on the unpaginated query so "Total Spent" reflects every
+        // transaction, not just the 10 shown on the current page.
+        $totalSpent = (clone $query)->sum('amount');
+        $transactionCount = (clone $query)->count();
+
+        $transactions = $query->with('booking.bookable')->latest()->paginate(10);
+
+        return view('customer.transactions.index', compact('transactions', 'totalSpent', 'transactionCount'));
     }
 }

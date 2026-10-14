@@ -15,7 +15,7 @@ class BilliardTableController extends Controller
     {
         $this->authorize('manage-tables');
 
-        $tables = BilliardTable::query()->orderBy('name')->get();
+        $tables = BilliardTable::orderedByName();
 
         return view('staff.billiard-tables.index', compact('tables'));
     }

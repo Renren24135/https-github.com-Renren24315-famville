@@ -14,11 +14,14 @@ class ProcessPaymentRequest extends FormRequest
 
     public function rules(): array
     {
-        $amountDue = (float) $this->route('booking')?->total_amount;
+        /** @var \App\Models\Booking|null $booking */
+        $booking = $this->route('booking');
+        $amountDue = $booking?->remainingBalance() ?? 0;
 
         return [
-            'payment_method' => ['required', Rule::in(['cash'])],
-            'cash_tendered' => ['required', 'numeric', 'min:'.$amountDue],
+            'payment_method' => ['required', Rule::in(['cash', 'gcash'])],
+            'cash_tendered' => ['required_if:payment_method,cash', 'nullable', 'numeric', 'min:'.$amountDue],
+            'gcash_reference' => ['required_if:payment_method,gcash', 'nullable', 'string', 'max:100'],
         ];
     }
 
@@ -26,6 +29,7 @@ class ProcessPaymentRequest extends FormRequest
     {
         return [
             'cash_tendered.min' => 'Cash tendered must cover the full amount due (₱:min).',
+            'gcash_reference.required_if' => 'Please enter the GCash reference number.',
         ];
     }
 }

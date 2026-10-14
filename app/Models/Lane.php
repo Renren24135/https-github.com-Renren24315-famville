@@ -37,6 +37,18 @@ class Lane extends Model
             ->first();
     }
 
+    /**
+     * Every "list all lanes" call site wants this, so it's centralized
+     * here rather than repeated as `orderBy('name')` everywhere — plain
+     * alphabetical sort puts "Lane 11 & 12" before "Lane 3 & 4" (string
+     * comparison: "11" < "3"), which visibly scrambles paired/numbered
+     * names. SORT_NATURAL sorts the embedded numbers numerically instead.
+     */
+    public static function orderedByName(): \Illuminate\Support\Collection
+    {
+        return static::query()->get()->sortBy('name', SORT_NATURAL)->values();
+    }
+
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
